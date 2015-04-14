@@ -31,7 +31,7 @@ The circuit-jsapi component is a non-UI component that acts as interface to the 
 ## Using circuit-conf-button
 The [circuit-conf-button](https://github.com/yourcircuit/polymer/tree/master/components/circuit-conf-button) example shows a button with which a user can start/join a WebRTC voice/video/screenshare conference. 
 
-[Try it out live](https://circuitsandbox.net/polymer/public/conference.html) if you have an account.
+[Try it out live](https://rawgit.com/yourcircuit/polymer/master/conference.html) if you have an account.
 
 All that's needed is to import the component and use it with a single line of HTML code.
 
