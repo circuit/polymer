@@ -1,0 +1,40 @@
+<!--
+    @license
+    Copyright (c) 2014 Unify.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>circuit-conf-button Demo</title>
+    <style>
+      section { max-width: 500px; }
+      section > div { padding: 10px; }
+    </style>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+    <link rel="import" href="components/circuit-conf-button/circuit-conf-button.html">
+  </head>
+  <body unresolved>
+    <h1>Circuit Polymer Client SDK test page</h1>
+    <p>Component: <code>circuit-conf-button</code></p>
+    <p>Logged On User: <i id="localUser"></i></p>
+
+    <div id="container" layout horizontal center style="display:none">
+      <!-- <circuit-conf-button domain="localhost:8094" convId="3154f545-1a6a-493a-8448-3c5cfa5a6b11"/> -->
+      <circuit-conf-button domain="circuitsandbox.net" convId="3154f545-1a6a-493a-8448-3c5cfa5a6b11"/>
+    </div>
+
+    <script>
+      var conf;
+      // Wait for 'polymer-ready'. Ensures the element is upgraded.
+      window.addEventListener('polymer-ready', function(e) {
+        conf = document.querySelector('circuit-conf-button');
+
+        conf.addEventListener('on-circuit-user-logged-on', function () {
+           document.querySelector('#localUser').textContent = conf.localUser.displayName;
+           document.querySelector('#container').style.display = '';
+        });
+      });
+    </script>
+  </body>
+</html>

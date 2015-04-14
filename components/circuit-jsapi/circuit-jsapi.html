@@ -1,0 +1,191 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog-transition.html">
+
+<!--
+Dynamically loads the Circuit APIs, firing the 'on-circuit-jsapi-loaded` event when ready.
+
+Any number of components can use `<circuit-jsapi>` elements, and the library will only be loaded once.
+
+@element circuit-jsapi
+-->
+<polymer-element name="circuit-jsapi" attributes="domain autoLogon">
+  <template>
+    <style>
+      #login .title {
+        font-size: 32px;
+        padding-left: 5px
+      }
+      #login img {
+        vertical-align: bottom;
+      }
+      #login paper-input {
+        width: 100%;
+      }
+    </style>
+    <paper-dialog id="login" transition="paper-dialog-transition-center">
+      <div>
+        <span class="title">Sign in to your account</span>
+      </div>
+      <div>
+        <paper-input id="email" type="email" label="Email"></paper-input>
+        <paper-input id="password" type="password" label="Password"></paper-input>
+      </div>
+      <paper-button affirmative>Cancel</paper-button>
+      <paper-button on-click="{{logon}}" affirmative autofocus>Sign in</paper-button>
+    </paper-dialog>
+  </template>
+
+  <script>
+
+    // Internal function to load the sdk scripts
+    function loadScript(src, cb) {
+      var script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = src;
+      script.async = false;
+      script.onload = cb;
+      document.head.appendChild(script);
+    }
+
+    Polymer({
+      loaded: false,
+      email: '',
+      password: '',
+      domain: '',
+      logonCallback: undefined,
+
+      autoLogon: false,
+
+      localUser: undefined,
+
+      // private
+      setupListeners: function () {
+        var _that = this;
+        _that.localUser.addEventListener('conferenceStarted', function (evt) {
+          _that.fire('on-conference-started', { convId: convId,  participants: ['roger@unify.com','rodrigo@unify.com'] });
+        });
+        _that.localUser.addEventListener('callStateChanged', function (evt) {
+          _that.fire('on-call-state-changed', evt);
+        });
+        _that.localUser.addEventListener('callEnded', function (evt) {
+          _that.fire('on-call-ended', evt);
+        });
+        _that.localUser.addEventListener('participantUpdated', function (evt) {
+          _that.fire('on-participant-updated', evt);
+        });
+      },
+
+      ready: function () {
+        var _that = this;
+        var url = this.domain ? 'https://' + this.domain + '/sdk.js' : 'https://circuitsandbox.net/sdk.js';
+        loadScript(url, function () {
+          console.log('Circuit SDK scripts loaded');
+          _that.loaded = true;
+          _that.fire('on-circuit-jsapi-loaded');
+
+          if (_that.autoLogon) {
+            _that.checkLogon(function (err) {
+              if (!err) {
+                _that.fire('on-circuit-user-logged-on');
+              } else {
+                _that.fire('on-circuit-user-logged-on-failed');
+              }
+            });
+          }
+        });
+      },
+
+      created: function () {
+      },
+
+      hasAuthenticatedSession: function (domain, cb) {
+        var _that = this;
+        Circuit.hasAuthenticatedSession(domain, function (err, loggedOnUser) {
+          if (!err) {
+            _that.localUser = loggedOnUser;
+            _that.setupListeners();
+            _that.logonCallback && _that.logonCallback();
+            _that.fire('on-circuit-user-logged-on');
+          }
+
+          cb && cb(!err);
+        });
+      },
+
+      /**
+       * The `logon` method logs the user on and set the 'localUser' attribute.
+       * Emits 'on-circuit-user-logged-on'.
+       *
+       * @method logon
+       */
+      logon: function(cb) {
+        var _that = this;
+
+        Circuit.logon(this.$.email.value, this.$.password.value, this.domain, function (err, loggedOnUser) {
+          if (!err) {
+            _that.localUser = loggedOnUser;
+            _that.setupListeners();
+            _that.logonCallback && _that.logonCallback();
+            _that.fire('on-circuit-user-logged-on');
+          }
+        });
+      },
+
+      /**
+       * The `getUserByEmail` method retrieves an Circuit User and returns it in the callback
+       *
+       * @method getUserByEmail
+       */
+      getUserByEmail: function(email, cb) {
+        Circuit.User.getUserByEmail(email, cb);
+      },
+
+
+      /**
+       * The `checkLogon` method checks if the user is logged on.
+       *
+       * @method checkLogon
+       */
+      checkLogon: function (cb) {
+        var _that = this;
+        if (this.localUser) {
+          cb && cb();
+        } else {
+          this.hasAuthenticatedSession(this.domain, function (hasAuthenticatedSession) {
+            if (hasAuthenticatedSession) {
+              cb && cb();
+            } else {
+              if (!_that.loaded) {
+                cb && cb('Unable to logon before sdk script is loaded.');
+                return;
+              }
+              _that.logonCallback = cb;
+              _that.$.login.toggle();
+            }
+          });
+        }
+      },
+
+      /**
+       * The `getConversation` method retrieves a conversation and returns it in the callback.
+       *
+       * @method getConversation
+       *  @param {string} query conversationId or userId
+       */
+      getConversation: function(query, cb) {
+        var _that = this;
+        this.checkLogon(function (err) {
+          if (err) {
+            cb && cb(err);
+            return;
+          }
+          _that.localUser.getConversation(query, cb);
+        });
+      },
+
+    });
+  </script>
+</polymer-element>

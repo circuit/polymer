@@ -1,0 +1,25 @@
+{
+  "name": "circuit-jsapi",
+  "version": "0.0.1",
+  "authors": [
+    "Roger Urscheler <roger.urscheler@unify.com>"
+  ],
+  "description": "Circuit JavaScript API component",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "~0.5.3",
+    "paper-button": "Polymer/paper-button#~0.5.3",
+    "paper-dialog": "Polymer/paper-dialog#~0.5.3",
+    "paper-input": "Polymer/paper-input#~0.5.3"
+  },
+  "private": true
+}

@@ -1,0 +1,499 @@
+<!--
+Copyright (c) 2014 Unify. All rights reserved.
+
+-->
+
+<!--
+Call stage overlay.
+
+Example:
+
+    <circuit-call-stage call={{call}} conversation={{conversation}} localUser={{localUser}} domain={{domain}}>
+    </circuit-call-stage>
+
+#### Transitions
+
+TODO
+
+@element circuit-call-stage
+@blurb Element providing a call stage for an Circuit Conference Call.
+@status alpha
+@homepage http://circuit.com/sdk/circuit-call-stage
+-->
+<!--
+Fired when the dialog's `opened` property changes.
+
+@event core-overlay-open
+@param {Object} detail
+@param {Object} detail.opened the opened state
+-->
+<link href="../../bower_components/polymer/polymer.html" rel="import">
+<link href="../../bower_components/core-overlay/core-overlay.html" rel="import">
+<link href="../../bower_components/paper-shadow/paper-shadow.html" rel="import">
+
+<polymer-element name="circuit-call-stage" attributes="opened autoCloseDisabled backdrop layered closeSelector localUser call conversation domain" role="dialog">
+
+  <template>
+
+
+    <link href="circuit-call-stage.css" rel="stylesheet">
+
+    <!-- Not sure why the shadow is not working here. Its works fine with demo-call-stage.html -->
+    <div id="shadow">
+      <paper-shadow z="3" hasPosition></paper-shadow>
+    </div>
+
+    <core-overlay id="overlay" opened="{{opened}}" autoCloseDisabled="true" backdrop="true" layered="true" target="{{}}" sizingTarget="{{$.container}}" margin="20"></core-overlay>
+
+    <div id="container" vertical layout>
+
+      <!-- Template for the direct conversation header -->
+      <template bind if="{{conversation.type==='DIRECT'}}">
+        <div id="header" horizontal layout>
+          <div class="avatar">
+            <img src="https:{{domain}}{{conversation.peerUser.avatarLarge}}">
+          </div>
+          <div flex>
+            <div vertical layout>
+              <div class="title text-overflow">{{conversation.peerUser.displayName}}</div>
+              <div class="location">
+                <img src="content/images/icon-presence-available-s.png"/>
+                <span style="display: {{conversation.peerUser.userPresenceState.locationText ? 'block' : 'none'}}">{{conversation.peerUser.userPresenceState.locationText}}, {{peerTime | date('HH:mm t')}}</span>
+                <span style="display: {{conversation.peerUser.userPresenceState.locationText ? 'none' : 'block'}}">On a call</span>
+              </div>
+              <!--<div class="details">-->
+              <!--  <span class="selected">Conversation</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Details</span>-->
+              <!--</div>-->
+            </div>
+          </div>
+          <div class="actions">
+            <div class="action-button hangup" on-click="{{hangup}}">
+              <img src="content/images/icon-calling-hang-up_cut.png"/>
+              <span class="elapsed-time">{{elapsedTime}}</span>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Template for the group conversation header -->
+      <template bind if="{{conversation.type!=='DIRECT'}}">
+        <div id="header" horizontal layout>
+          <div class="avatar">
+            <img src="https://{{domain}}/{{localUser.avatarLarge}}">
+          </div>
+          <div flex>
+            <div vertical layout>
+              <div class="title text-overflow">{{conversation.participantFullNames}}</div>
+              <div class="members">{{conversation.participants.length}} participants</div>
+              <!--<div class="details">-->
+              <!--  <span class="selected">Conversation</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Details</span>-->
+              <!--</div>-->
+            </div>
+          </div>
+          <div class="actions">
+            <div class="action-button hangup text-button" on-click="{{hangup}}">
+              <div>Leave</div>
+              <span class="elapsed-time">{{elapsedTime}}</span>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <div id="divider"></div>
+
+      <!-- Stage -->
+      <audio autoplay="autoplay" id="remoteAudio" audio-url="{{call.remoteAudioUrl}}"></audio>
+      <div id="stage" class="{{callTypeCss}}">
+        <span class="waiting-msg">Waiting for participants to join...</span>
+        <div id="primarystage">
+          <ul class="callers">
+            <template repeat="{{participant in primaryParticipants}}">
+              <li on-click="{{muteParticipant}}">
+                <div class="avatar">
+                  <img src="https://{{domain}}/{{participant.avatarLarge}}" style="display: {{!!participant.videoUrl ? 'none' : 'flex'}}">
+                  <video src="{{participant.videoUrl}}" autoplay="true" style="display: {{!!participant.videoUrl ? 'flex' : 'none'}}"></video>
+                  <div class="name">
+                    <span class="firstName">{{participant.firstName}}</span>
+                    <span class="firstName">{{participant.lastName}}</span>
+                  </div>
+                </div>
+                <div class="active-speaker-holder" style="display: {{!!participant.activeSpeaker ? 'inherit' : 'none'}}"></div>
+              </li>
+            </template>
+          </ul>
+        </div>
+
+        <div id="secondarystage">
+          <ul class="callers">
+            <template repeat="{{participant in secondaryParticipants}}">
+              <li on-click="{{muteParticipant}}">
+                <div class="avatar">
+                  <img src="https://{{domain}}/{{participant.avatarLarge}}" style="display: {{!!participant.videoUrl ? 'none' : 'flex'}}">
+                  <video src="{{participant.videoUrl}}" autoplay="true" style="display: {{!!participant.videoUrl ? 'flex' : 'none'}}"></video>
+                  <div class="name">
+                    <span class="firstName">{{participant.firstName}}</span>
+                    <span class="firstName">{{participant.lastName}}</span>
+                  </div>
+                  <div class="active-speaker-holder" style="display: {{!!participant.activeSpeaker ? 'inherit' : 'none'}}"></div>
+                </div>
+              </li>
+            </template>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Action Bar -->
+      <div id="bar" horizontal layout center>
+        <img on-click="{{toggleScreenShare}}" src="{{screenshareIcon}}">
+        <img on-click="{{toggleMute}}" class="self-center {{isMuted?'muted':'unmuted'}}" src="{{muteIcon}}">
+        <img on-click="{{toggleVideo}}" class="self-center" src="{{videoIcon}}">
+        <div class="local-user">
+          <div class="crop" style="display:{{localVideoShown||localScreenShareShown?'block':'none'}}">
+            <div class="overlays"></div>
+            <video class="video-preview" autoplay="true" src="{{call.localVideoUrl}}"></video>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </template>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // Helper function to display elapsed time
+      String.prototype.toHHMMSS = function () {
+          var sec_num = parseInt(this, 10); // don't forget the second param
+          var hours   = Math.floor(sec_num / 3600);
+          var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+          var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+          if (hours   < 10) {hours   = '0' + hours;}
+          if (minutes < 10) {minutes = '0' + minutes;}
+          if (seconds < 10) {seconds = '0' + seconds;}
+          if (hours > 0) {
+            return hours + ':' + minutes + ':' + seconds;
+          } else {
+            return minutes + ':' + seconds;
+          }
+      }
+
+      Polymer('circuit-call-stage', {
+
+        elapsedTime: '',
+        peerTime: Date.now(),
+        callTypeCss: '',
+        secondaryParticipants: [],
+        primaryParticipants: [],
+        /**
+         * Set opened to true to show the dialog and to false to hide it.
+         * A dialog may be made intially opened by setting its opened attribute.
+
+         * @attribute opened
+         * @type boolean
+         * @default false
+         */
+        opened: false,
+
+        /**
+         * If true, the dialog has a backdrop darkening the rest of the screen.
+         * The backdrop element is attached to the document body and may be styled
+         * with the class `core-overlay-backdrop`. When opened the `core-opened`
+         * class is applied.
+         *
+         * @attribute backdrop
+         * @type boolean
+         * @default false
+         */
+        backdrop: false,
+
+        /**
+         * If true, the dialog is guaranteed to display above page content.
+         *
+         * @attribute layered
+         * @type boolean
+         * @default false
+        */
+        layered: false,
+
+        /**
+         * By default a dialog will close automatically if the user
+         * taps outside it or presses the escape key. Disable this
+         * behavior by setting the `autoCloseDisabled` property to true.
+         * @attribute autoCloseDisabled
+         * @type boolean
+         * @default false
+         */
+        autoCloseDisabled: false,
+
+        isMuted: false,
+
+        get videoIcon() {
+          return this.localVideoShown ? 'content/images/icon-calling-camera-on-l.png' : 'content/images/icon-calling-camera-off-l.png';
+        },
+
+        get muteIcon() {
+          return this.call && this.isMuted ? 'content/images/icon-calling-microphone-off-l.png' : 'content/images/icon-calling-microphone-l-inverted.png';
+        },
+
+        get screenshareIcon() {
+          return this.call && this.call.localMediaType.desktop ? 'content/images/icon-calling-screenshare-on-l.png' : 'content/images/icon-calling-screenshare_active_cut.png';
+        },
+
+
+        computed: {
+          localVideoShown: 'call.localVideoUrl && call.localMediaType.video',
+          localScreenShareShown: 'call.localVideoUrl && call.localMediaType.desktop'
+        },
+
+        /**
+         * Toggle the dialog's opened state.
+         * @method toggle
+         */
+        toggle: function() {
+          this.$.overlay.toggle();
+        },
+
+        call: null,
+
+        resizeHandler: function () {
+          this.$.overlay.resizeHandler();
+        },
+
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Polymer callbacks
+        /////////////////////////////////////////////////////////////////////////////////
+        ready: function () {
+          var _elem = this;
+          
+          this.addEventListener('on-participant-updated', function (e) {
+            _elem.participantsChangeMedia();
+          });
+        },
+
+        created: function () {
+        },
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Template event handler
+        /////////////////////////////////////////////////////////////////////////////////
+        toggleMute: function(event, detail, sender) {
+          var _elem = this;
+          this.call.toggleMute(function (err, isMuted) {
+            _elem.isMuted = isMuted;
+          });
+        },
+
+        toggleVideo: function(event, detail, sender) {
+          var _elem = this;
+          this.call.toggleVideo();
+        },
+
+        toggleScreenShare: function (event, detail, sender) {
+          this.call.toggleScreenShare();
+        },
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Observers
+        /////////////////////////////////////////////////////////////////////////////////
+        observe: {
+          'call.state': 'callState',
+          'call.participants.length': 'participantsChangeLength'
+        },
+
+        participantsChangeLength: function (oldValue, newValue) {
+          var _this = this;
+          if (!_this.call) { return; }
+
+          _this.setCallType(_this.call);
+
+          // initialize if needed
+          /*
+          if (_this.call.participants.length === 1) {
+            _this.primaryParticipants = _this.call.participants[0];
+            _this.secondaryParticipants = [];
+            _this.$.overlay.resizeHandler();
+            return;
+          }
+          */
+          
+          
+          if (!_this.secondaryParticipants.length && _this.call.participants.length) {
+            _this.secondaryParticipants = _this.call.participants.slice(0);
+            _this.primaryParticipants = [];
+            _this.$.overlay.resizeHandler();
+            _this.participantsChangeMedia();
+            return;
+          }
+          
+
+          // participant added
+          if (newValue > oldValue) {
+            _this.secondaryParticipants.push(_this.call.participants[_this.call.participants.length - 1]);
+            _this.$.overlay.resizeHandler();
+            _this.participantsChangeMedia();
+            return;
+          }
+
+          // participant removed
+          if (newValue < oldValue) {
+            _this.secondaryParticipants.some(function (p, i) {
+                if (_this.call.participants.indexOf(p) == -1) {
+                  _this.secondaryParticipants.splice(i, 1);
+                  return true;
+                }
+            });
+
+            _this.$.overlay.resizeHandler();
+            _this.participantsChangeMedia();
+            return;
+          }
+         },
+
+        participantsChangeMedia: function () {
+          var _this = this;
+          _this.setCallType(_this.call);
+
+          // screen share group call
+          if (_this.call && _this.call.activeMediaType && _this.call.activeMediaType.desktop) {
+            var screenshare = _this.call.participants.some(function (p, i) {
+              if (p.mediaType.desktop) {
+                _this.primaryParticipants = [];
+                _this.secondaryParticipants = [];
+
+                _this.secondaryParticipants = _this.call.participants.slice(0);
+                _this.primaryParticipants[0] = _this.call.participants[_this.call.participants.indexOf(p)];
+                _this.secondaryParticipants.splice(i, 1);
+                _this.$.overlay.resizeHandler();
+                return true;
+              }
+            });
+          }
+
+          // video group call
+          if (_this.call && _this.call.hasVideo() && !screenshare) {
+            _this.secondaryParticipants = [];
+            _this.primaryParticipants = _this.call.participants.slice(0);
+            _this.$.overlay.resizeHandler();
+            return;
+          }
+
+          // audio group call
+          if (_this.call && !_this.call.hasVideo()) {
+            _this.primaryParticipants = [];
+            _this.secondaryParticipants = _this.call.participants.slice(0);
+            _this.$.overlay.resizeHandler();
+            return;
+          }
+        },
+
+        callState: function() {
+          var _this = this;
+
+          if (_this.call) {
+
+            // if (!this.secondaryParticipants.length && _this.call.participants.length) {
+            //   this.secondaryParticipants = _this.call.participants.slice(0);
+            // }
+
+            // call has just started
+            if (!_this.elapsedTime) {
+              _this.elapsedTime = '00:00';
+
+              // Update elapsed time and for now update the modal size here as well for
+              // participants adding/removing video
+              window.setInterval(function () {
+                if (_this.call && _this.call.$$call.establishedTime) {
+                  _this.elapsedTime = ((Date.now() - _this.call.$$call.establishedTime) / 1000).toString().toHHMMSS();
+                  _this.peerTime = Date.now(); // todo offset
+                  _this.$.overlay.resizeHandler();
+                }
+                else {
+                  _this.elapsedTime = "";
+                }
+              }, 1000);
+
+              window.onresize = function() {
+                _this.resizeHandler();
+              }
+            }
+
+            _this.setCallType(this.call);
+          }
+        },
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Public functions
+        /////////////////////////////////////////////////////////////////////////////////
+        hangup: function () {
+            this.call.end();
+            this.close();
+            this.secondaryParticipants = [];
+            this.primaryParticipants = [];
+        },
+
+        open: function () {
+          if (!this.opened) {
+            this.toggle();
+          }
+        },
+
+        close: function () {
+          if (this.opened) {
+            this.toggle();
+          }
+        },
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // Local functions
+        /////////////////////////////////////////////////////////////////////////////////
+
+        setCallType: function(call) {
+          if (call) {
+              if (call.isDirect) {
+                  this.callTypeCss = 'direct';
+              }
+              else if (call.isRemote) {
+                  this.callTypeCss = 'remote';
+              }
+              else {//Group call
+                  if (call.hasVideo()) {
+                    if (call.localMediaType.desktop) {
+                      this.callTypeCss = 'video local-screenshare active';
+                    }
+                    else if (call.activeMediaType.desktop) {
+                      this.callTypeCss = 'video remote-screenshare active';
+                    }
+                    else {
+                      this.callTypeCss = 'video active';
+                    }
+                    return;
+                  }
+
+                  if (this.call.isEstablished()) {
+                    this.callTypeCss = 'active';
+                  } else if (this.call.state === 'Initiated' || this.call.state === 'Delivered') {
+                    this.callTypeCss = 'outgoing';
+                  } else {
+                    this.callTypeCss = '';
+                  }
+              }
+
+              if (!call.participants.length) {
+                this.callTypeCss += ' waiting';
+              }
+
+          } else {
+             this.callTypeCss = '';
+          }
+        }
+      });
+
+    })();
+
+  </script>
+
+</polymer-element>

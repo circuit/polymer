@@ -1,0 +1,299 @@
+<!--
+    @license
+    Copyright (c) 2014 Unify
+-->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog-transition.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+
+<link rel="import" href="../circuit-jsapi/circuit-jsapi.html">
+<link rel="import" href="../circuit-call-stage/circuit-call-stage.html">
+
+<!--
+Element providing a button to start or join an Circuit Conference Call.
+
+##### Example
+
+    <circuit-conf-button
+      convId="ca6c5dba-e905-4533-ba71-2c91392a9e41"
+      domain="circuit.com"
+      on-conference-started="onConfStarted">
+    </circuit-conf-button>
+
+@element circuit-conf-button
+@blurb Element providing a button to start or join an Circuit Conference Call.
+@status alpha
+@homepage http://circuitsandbox.net/sdk/polymer/circuit-conf-button
+-->
+
+<polymer-element name="circuit-conf-button" attributes="convId domain width height">
+
+  <template>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="circuit-conf-button.css" />
+
+    <div class="component feed-header {{call.state.css}} {{conversationStatusCss}} {{callTypeCss}} group">
+      <div id="confButton" on-click="{{buttonClick}}" style="width: {{width}}; height: {{height}}" class="action-button {{actionTypeCss}} text-button">{{buttonText}}</div>
+    </div>
+
+    <circuit-jsapi id="jsapi" domain={{domain}} autoLogon="true"></circuit-jsapi>
+    <circuit-call-stage id="stage" call={{call}} conversation={{conversation}} localUser={{localUser}} domain={{domain}}></circuit-call-stage>
+    <paper-toast id="toast" text=""></paper-toast>
+
+  </template>
+
+  <script>
+
+    (function() {
+      Polymer('circuit-conf-button', {
+
+        /**
+         * Conversation ID
+         *
+         * @attribute convId
+         * @type string
+         */
+        convId: null,
+
+        /**
+         * Domain for service. E.g. circuit.com
+         *
+         * @attribute domain
+         * @type string
+         */
+        domain: null,
+
+        /**
+         * Specifies the width of the button.
+         *
+         * @attribute width
+         * @type string
+         * @default 136px
+         */
+        width: '136px',
+
+        /**
+         * Specifies the height of the button.
+         *
+         * @attribute heigth
+         * @type string
+         * @default 26px
+         */
+        heigth: '26px',
+
+        conversationStatusCss: 'normal',
+        callTypeCss: '',
+        actionTypeCss: 'conference-open',
+        buttonText: 'Start Conversation',
+        call: null,
+
+        get localUser() {
+          return this.$ ? this.$.jsapi.localUser : undefined;
+        },
+
+        setCallStateClasses: function(call) {
+          this.conversationStatusCss = (call ? 'in-call' : 'normal');
+          if (call) {
+              if (call.isDirect) {
+                  this.callTypeCss = 'webrtc';
+              }
+              else if (call.isRemote) {
+                  this.callTypeCss = 'remote';
+              }
+              else {//Group call
+                  if (call.isGroupCallInitiated) {this.callTypeCss = 'ongoing'; }
+                  if (call.isGroupCallDelivered) {this.callTypeCss = 'ongoing'; }
+                  if (call.isGroupCallActive) {this.callTypeCss = 'active'; }
+              }
+          } else {
+             this.callTypeCss = '';
+          }
+          if (call && call.isGroupCallStarted && call.conferenceCall) {
+            this.actionTypeCss = 'join';
+          } else if (call && !call.isRemote && call.conferenceCall) {
+            this.actionTypeCss = 'hangup';
+          } else {
+            this.actionTypeCss = 'conference-open';
+          }
+        },
+
+        showToast: function(msg) {
+          this.$.toast.text = msg;
+          this.$.toast.show();
+        },
+
+        buttonClick: function(event, detail, sender) {
+          // Join
+          if (this.call && this.call.isRemote) {
+            this.conversation.joinConference({audio: true, video: false}, function (err) {
+              console.log('You joined a conference call on conversation ' + _elem.conversation.convId);
+            });
+            if (!this.$.stage.opened) {
+              this.$.stage.toggle();
+            }
+            return;
+          }
+
+          // End
+          if (this.call) {
+            this.call.end();
+            return;
+          }
+
+          // Start
+          if (this.conversation.isDirectConversation) {
+            this.conversation.callUser({audio: true, video: false}, function (err) {
+              console.log('You started a direct call on conversation ' + _elem.conversation.convId);
+            });
+          } else {
+            this.conversation.startConference({audio: true, video: false}, function (err) {
+              console.log('You started a conference call on conversation ' + _elem.conversation.convId);
+            });
+          }
+        },
+
+        initEventHandlers: function () {
+          _elem = this;
+          
+          this.addEventListener('on-participant-updated', function (evt) {
+            // Pass along event to stage
+            this.$.stage.fire('on-participant-updated', evt);
+          });
+
+          this.addEventListener('on-circuit-user-logged-on', function () {
+            this.showToast('Circuit: Logged on as ' + this.localUser.displayName);
+
+            this.$.jsapi.getConversation(this.convId, function (err, conv) {
+              if (!err) {
+                _elem.conversation = conv;
+              }
+            });
+          });
+
+          // Conference call state change
+          this.addEventListener('on-call-state-changed', function (e) {
+            var data = e.detail;
+            this.call = data.call;
+            console.log('on-call-state-changed: newState=' + this.call.state);
+
+            if (this.call.state === 'Started') {
+              this.buttonText = 'Join conference';
+              return;
+            }
+
+            this.setCallStateClasses(this.call);
+            this.buttonText = 'Leave';
+
+            if (!this.$.stage.opened) {
+              this.$.stage.toggle();
+            }
+          });
+
+          // Conference call ended
+          this.addEventListener('on-call-ended', function (e) {
+            var data = e.detail;
+            if (this.call && this.call !== data.call) {
+              this.setCallStateClasses(this.call);
+              return;
+            }
+            console.log('on-call-ended');
+
+            this.call = null;
+            this.buttonText = 'Start Conference';
+            this.setCallStateClasses(this.call);
+
+            if (this.$.stage.opened) {
+               this.$.stage.toggle();
+            }
+          });
+
+        },
+
+
+        ready: function() {
+          // Set this polymer element
+          _elem = this;
+
+
+          // temporary
+          this.state = 'idle';
+          this.buttonText = 'Start Conference';
+
+          this.initEventHandlers();
+          // User logged on. Get conversation.
+        },
+
+        created: function() {
+
+        },
+
+         /**
+         * The `on-conference-started` event is fired when the conference call
+         * is started.
+         *
+         * @event on-conference-started
+         * @param {Object} data
+         *   @param {string} data.participants Conference call participants.
+         */
+
+        /**
+         * The `on-conference-ended` event is fired when the conference call
+         * has ended.
+         *
+         * @event on-conference-ended
+         * @param {Object} data
+         *   @param {int} data.duration Conference call duration.
+         */
+
+        /**
+         * The `on-user-joined` event is fired when a user joined the conference call.
+         *
+         * @event on-user-joined
+         * @param {Object} data
+         *   @param {int} data.user User that joined.
+         */
+
+        /**
+         * The `addUser` method will add users to the conference.
+         *
+         * @method addUser
+         */
+        addUser: function() {
+          this.fire('on-user-added', { participants: ['roger@unify.com','rodrigo@unify.com'] });
+        },
+
+        /**
+         * The `startConference` method will start the conference.
+         *
+         * @method startConference
+         */
+        startConference: function() {
+          this.state = 'started';
+          this.fire('on-conference-started');
+        },
+
+        /**
+         * The `endConference` method will end the conference.
+         *
+         * @method endConference
+         */
+        endConference: function() {
+          state = 'idle';
+          this.fire('on-conference-ended');
+        },
+
+        /**
+         * The `joinConference` method will ....
+         *
+         * @method joinConference
+         */
+        joinConference: function() {
+          this.fire('on-user-joined', 'roger@unify.com');
+        }
+      });
+    })();
+
+  </script>
+
+</polymer-element>
