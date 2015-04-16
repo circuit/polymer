@@ -231,15 +231,15 @@ Fired when the dialog's `opened` property changes.
         isMuted: false,
 
         get videoIcon() {
-          return this.localVideoShown ? 'content/images/icon-calling-camera-on-l.png' : 'content/images/icon-calling-camera-off-l.png';
+          return this.localVideoShown ? this.resolvePath('images/icon-calling-camera-on-l.png') : this.resolvePath('images/icon-calling-camera-off-l.png');
         },
 
         get muteIcon() {
-          return this.call && this.isMuted ? 'content/images/icon-calling-microphone-off-l.png' : 'content/images/icon-calling-microphone-l-inverted.png';
+          return this.call && this.isMuted ? this.resolvePath('images/icon-calling-microphone-off-l.png') : this.resolvePath('images/icon-calling-microphone-l-inverted.png');
         },
 
         get screenshareIcon() {
-          return this.call && this.call.localMediaType.desktop ? 'content/images/icon-calling-screenshare-on-l.png' : 'content/images/icon-calling-screenshare_active_cut.png';
+          return this.call && this.call.localMediaType.desktop ?  this.resolvePath('images/icon-calling-screenshare-on-l.png') : this.resolvePath('images/icon-calling-screenshare_active_cut.png');
         },
 
 
