@@ -93,7 +93,7 @@ Element providing a button to start or join an Circuit Conference Call.
         },
 
         setCallStateClasses: function(call) {
-          this.conversationStatusCss = (call ? 'in-call' : 'normal');
+          this.conversationStatusCss =  (call ? 'hidden' : 'normal'); // (call ? 'in-call' : 'normal');
           if (call) {
               if (call.isDirect) {
                   this.callTypeCss = 'webrtc';
@@ -193,7 +193,7 @@ Element providing a button to start or join an Circuit Conference Call.
           // Conference call ended
           this.addEventListener('on-call-ended', function (e) {
             var data = e.detail;
-            if (this.call && this.call !== data.call) {
+            if (this.call && this.call.callId !== data.call.callId) {
               this.setCallStateClasses(this.call);
               return;
             }
