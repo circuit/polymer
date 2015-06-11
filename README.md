@@ -2,6 +2,8 @@
 
 > Example polymer components for the Circuit Collaboration Software by Unify.
 
+> Components are still based on Polymer 0.5. We are working hard to upgrade them to 1.0.
+
 ## Prerequisites
 To use the SDK you need to get free developer account. Get your developer account today at https://www.yourcircuit.com/web/developers/home.
 
@@ -15,6 +17,12 @@ Polymer components are supported on any modern browser. Some functionality with 
 [API Documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-conf-button/index.html) | [Source code](https://github.com/yourcircuit/polymer/tree/master/components/circuit-conf-button) 
 
 Shows a button to start/join a Circuit voice/video/screenshare conference using WebRTC. Uses a polymer paper-dialog component to ask for credentials unless a session cookie is available.
+
+**circuit-call-button**
+
+[API Documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-call-button/index.html) | [Source code](https://github.com/yourcircuit/polymer/tree/master/components/circuit-call-button) 
+
+Shows a button to start Circuit voice call using WebRTC. Call can be upgraded to video and screenshare by either party.
 
 **circuit-call-stage**
 
@@ -68,15 +76,16 @@ conf.startConference({audio: true, video: false}, function () {
 });
 ```
 
-## Develop your own component
+## Run these examples locally
 
  1. Clone this repo
- 2. Download [ChomeDev Editor](https://chrome.google.com/webstore/detail/chrome-dev-editor-develop/pnoffddplpippgcfjdhbmhkofpnaalpg?hl=en), or use your editor of choice
- 3. Enhance the circuit-jsapi component with APIs you need from the [JS Client API](https://circuitsandbox.net/sdk/)
+ 2. Install node-static via `npm install node-static`
+ 3. Run the example by navigating to `http://localhost:8080/conference.html`
+
+## Develop your own component
+
+ 1. Fork this repo
+ 2. Enhance the circuit-jsapi component with APIs you need from the [JS Client API](https://circuitsandbox.net/sdk/)
  4. Create your own amazing components
  5. Share them with the rest of us :)
 
-
-## License
-
-APACHE 2.0 - http://www.apache.org/licenses/LICENSE-2.0.html

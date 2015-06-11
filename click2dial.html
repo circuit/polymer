@@ -1,34 +1,33 @@
 <!--
     @license
-    Copyright (c) 2014 Unify.
+    Copyright (c) 2015 Unify.
 -->
 <!doctype html>
 <html>
   <head>
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>circuit-conf-button Demo</title>
+    <title>circuit-call-button Demo</title>
     <style>
       section { max-width: 500px; }
       section > div { padding: 10px; }
     </style>
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
-    <link rel="import" href="components/circuit-conf-button/circuit-conf-button.html">
+    <link rel="import" href="components/circuit-call-button/circuit-call-button.html">
   </head>
   <body unresolved>
-    <h1>Circuit Polymer test page: circuit-conf-button</h1>
-    <p>Component: <code>circuit-conf-button</code></p>
+    <h1>Circuit Polymer test page: circuit-call-button</h1>
+    <p>Component: <code>circuit-call-button</code></p>
     <p>Logged On User: <i id="localUser"></i></p>
 
     <div id="container" layout horizontal center style="display:none">
-      <!-- <circuit-conf-button domain="localhost:8094" convId="3154f545-1a6a-493a-8448-3c5cfa5a6b11"/> -->
-      <circuit-conf-button domain="circuitsandbox.net" convId="3154f545-1a6a-493a-8448-3c5cfa5a6b11"/>
+      <circuit-call-button domain="circuitsandbox.net" peer="rodrigo.pastro@unify.com" width="75px">Contact Us</circuit-call-button>
     </div>
 
     <script>
       var conf;
       // Wait for 'polymer-ready'. Ensures the element is upgraded.
       window.addEventListener('polymer-ready', function(e) {
-        conf = document.querySelector('circuit-conf-button');
+        conf = document.querySelector('circuit-call-button');
 
         conf.addEventListener('on-circuit-user-logged-on', function () {
            document.querySelector('#localUser').textContent = conf.localUser.displayName;

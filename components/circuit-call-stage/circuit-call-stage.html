@@ -51,15 +51,15 @@ Fired when the dialog's `opened` property changes.
       <template bind if="{{conversation.type==='DIRECT'}}">
         <div id="header" horizontal layout>
           <div class="avatar">
-            <img src="https:{{domain}}{{conversation.peerUser.avatarLarge}}">
+            <img src="https://{{domain}}{{localUser.avatarLarge}}">
           </div>
           <div flex>
             <div vertical layout>
-              <div class="title text-overflow">{{conversation.peerUser.displayName}}</div>
+              <div class="title text-overflow">{{conversation.participants[0].displayName}}</div>
               <div class="location">
-                <img src="content/images/icon-presence-available-s.png"/>
-                <span style="display: {{conversation.peerUser.userPresenceState.locationText ? 'block' : 'none'}}">{{conversation.peerUser.userPresenceState.locationText}}, {{peerTime | date('HH:mm t')}}</span>
-                <span style="display: {{conversation.peerUser.userPresenceState.locationText ? 'none' : 'block'}}">On a call</span>
+                <img src="images/icon-presence-available-s.png"/>
+                <span style="display: {{conversation.participants[0].userPresenceState.locationText ? 'block' : 'none'}}">{{conversation.participants[0].userPresenceState.locationText}}</span>
+                <span style="display: {{conversation.participants[0].userPresenceState.locationText ? 'none' : 'block'}}">On a call</span>
               </div>
               <!--<div class="details">-->
               <!--  <span class="selected">Conversation</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>Details</span>-->
@@ -68,7 +68,7 @@ Fired when the dialog's `opened` property changes.
           </div>
           <div class="actions">
             <div class="action-button hangup" on-click="{{hangup}}">
-              <img src="content/images/icon-calling-hang-up_cut.png"/>
+              <img src="images/icon-calling-hang-up_cut.png"/>
               <span class="elapsed-time">{{elapsedTime}}</span>
             </div>
           </div>

@@ -1,0 +1,236 @@
+<!--
+    @license
+    Copyright (c) 2014 Unify
+-->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog-transition.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+
+<link rel="import" href="../circuit-jsapi/circuit-jsapi.html">
+<link rel="import" href="../circuit-call-stage/circuit-call-stage.html">
+
+<!--
+Element providing a button to start a call.
+
+##### Example
+
+    <circuit-call-button peer="user@mycompany.com" width="75px">Contact Us</circuit-call-button>
+
+@element circuit-call-button
+@blurb Element providing a button to start a call.
+@status alpha
+@homepage https://github.com/yourcircuit/polymer/circuit-call-button
+-->
+
+<polymer-element name="circuit-call-button" attributes="peer domain width height">
+
+  <template>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="circuit-call-button.css" />
+
+    <div class="component feed-header {{call.state.css}} {{conversationStatusCss}} {{callTypeCss}} group">
+      <div id="callButton" on-click="{{buttonClick}}" style="width: {{width}}; height: {{height}}" class="action-button {{actionTypeCss}} text-button">
+        <content></content>
+      </div>
+    </div>
+
+    <circuit-jsapi id="jsapi" domain={{domain}} autoLogon="true"></circuit-jsapi>
+    <circuit-call-stage id="stage" call={{call}} conversation={{conversation}} localUser={{localUser}} domain={{domain}}></circuit-call-stage>
+    <paper-toast id="toast" text=""></paper-toast>
+
+  </template>
+
+  <script>
+
+    (function() {
+      Polymer('circuit-call-button', {
+
+        /**
+         * Email of user to be called.
+         *
+         * @attribute peerEmail
+         * @type string
+         */
+        peer: null,
+
+        /**
+         * Domain for service. E.g. circuit.com
+         *
+         * @attribute domain
+         * @type string
+         */
+        domain: null,
+
+        /**
+         * Specifies the width of the button.
+         *
+         * @attribute width
+         * @type string
+         * @default 100px
+         */
+        width: '100px',
+
+        /**
+         * Specifies the height of the button.
+         *
+         * @attribute heigth
+         * @type string
+         * @default 26px
+         */
+        heigth: '26px',
+
+        conversationStatusCss: 'normal',
+        callTypeCss: '',
+        actionTypeCss: 'conference-open',
+        buttonText: 'Call',
+        call: null,
+
+        get localUser() {
+          return this.$ ? this.$.jsapi.localUser : undefined;
+        },
+
+        setCallStateClasses: function(call) {
+          this.conversationStatusCss =  (call ? 'hidden' : 'normal'); // (call ? 'in-call' : 'normal');
+          if (call) {
+              if (call.isDirect) {
+                  this.callTypeCss = 'webrtc';
+              }
+              else if (call.isRemote) {
+                  this.callTypeCss = 'remote';
+              }
+              else {//Group call
+                  if (call.isGroupCallInitiated) {this.callTypeCss = 'ongoing'; }
+                  if (call.isGroupCallDelivered) {this.callTypeCss = 'ongoing'; }
+                  if (call.isGroupCallActive) {this.callTypeCss = 'active'; }
+              }
+          } else {
+             this.callTypeCss = '';
+          }
+          if (call && call.isGroupCallStarted && call.conferenceCall) {
+            this.actionTypeCss = 'join';
+          } else if (call && !call.isRemote && call.conferenceCall) {
+            this.actionTypeCss = 'hangup';
+          } else {
+            this.actionTypeCss = 'conference-open';
+          }
+        },
+
+        showToast: function(msg) {
+          this.$.toast.text = msg;
+          this.$.toast.show();
+        },
+
+        buttonClick: function(event, detail, sender) {
+          // End call
+          if (this.call) {
+            this.call.end();
+            return;
+          }
+
+          // Start call
+          this.conversation.call({audio: true, video: false}, function (err) {
+            console.log('You started a direct call on conversation ' + _elem.conversation.convId);
+          });
+        },
+
+        initEventHandlers: function () {
+          _elem = this;
+
+          this.addEventListener('on-circuit-user-logged-on', function () {
+            this.showToast('Circuit: Logged on as ' + this.localUser.displayName);
+
+            this.$.jsapi.getConversation(this.peer, function (err, conv) {
+              if (!err) {
+                _elem.conversation = conv;
+              }
+            });
+          });
+
+          // Call state change
+          this.addEventListener('on-call-state-changed', function (e) {
+            var data = e.detail;
+            this.call = data.call;
+            console.log('on-call-state-changed: newState=' + this.call.state);
+
+            if (this.call.state === 'Started') {
+              this.buttonText = 'Calling...';
+              return;
+            }
+
+            this.setCallStateClasses(this.call);
+            this.buttonText = 'End Call';
+
+            if (!this.$.stage.opened) {
+              this.$.stage.toggle();
+            }
+          });
+
+          // Conference call ended
+          this.addEventListener('on-call-ended', function (e) {
+            var data = e.detail;
+            if (this.call && this.call.callId !== data.call.callId) {
+              this.setCallStateClasses(this.call);
+              return;
+            }
+            console.log('on-call-ended');
+
+            this.call = null;
+            this.buttonText = 'Start Conference';
+            this.setCallStateClasses(this.call);
+
+            if (this.$.stage.opened) {
+               this.$.stage.toggle();
+            }
+          });
+
+        },
+
+
+        ready: function() {
+          // Set this polymer element
+          _elem = this;
+
+          this.buttonText = _elem.textContent;
+          this.state = 'idle';
+
+          this.initEventHandlers();
+          // User logged on. Get conversation.
+        },
+
+        created: function() {
+
+        },
+
+         /**
+         * The `on-call-state-changed` event is fired when the state of the call changes. E.g. Alerting, Active
+         *
+         * @event on-call-state-changed
+         * @param {Object} data
+         *   @param {string} data.callState Call state.
+         */
+
+
+        /**
+         * The `startCall` method will start the call.
+         *
+         * @method startCall
+         */
+        startCall: function() {
+          this.state = 'started';
+        },
+
+        /**
+         * The `endCall` method will end the call.
+         *
+         * @method endCall
+         */
+        endCall: function() {
+          state = 'idle';
+        }
+      });
+    })();
+
+  </script>
+
+</polymer-element>
