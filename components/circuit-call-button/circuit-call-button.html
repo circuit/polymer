@@ -184,6 +184,9 @@ Element providing a button to start a call.
             }
           });
 
+          this.addEventListener('on-participant-updated', function (e) {
+            this.$.stage.participantsChangeMedia();
+          });
         },
 
 

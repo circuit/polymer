@@ -76,6 +76,10 @@ Any number of components can use `<circuit-jsapi>` elements, and the library wil
         _that.localUser.addEventListener('participantUpdated', function (evt) {
           _that.fire('on-participant-updated', evt);
         });
+        _that.localUser.addEventListener('remoteStreamUpdated', function (evt) {
+          _that.fire('on-remote-stream-updated', evt);
+        });
+
       },
 
       ready: function () {

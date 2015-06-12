@@ -102,7 +102,7 @@ Fired when the dialog's `opened` property changes.
       <div id="divider"></div>
 
       <!-- Stage -->
-      <audio autoplay="autoplay" id="remoteAudio" audio-url="{{call.remoteAudioUrl}}"></audio>
+      <audio autoplay id="remoteAudio" src="{{call.remoteAudioUrl}}"></audio>
       <div id="stage" class="{{callTypeCss}}">
         <span class="waiting-msg">Waiting for participants to join...</span>
         <div id="primarystage">
@@ -319,7 +319,16 @@ Fired when the dialog's `opened` property changes.
             return;
           }
           */
-          
+          if (_this.conversation.type === 'DIRECT' && _this.call.participants.length) {
+            _this.primaryParticipants = _this.call.participants.slice(0);
+            _this.secondaryParticipants = [];
+
+            // temporary wait a bit to have the UI ready for resizing
+            window.setTimeout(function () {
+              _this.$.overlay.resizeHandler();
+            }, 1000)
+            return;
+          }
           
           if (!_this.secondaryParticipants.length && _this.call.participants.length) {
             _this.secondaryParticipants = _this.call.participants.slice(0);
