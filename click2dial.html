@@ -30,7 +30,7 @@
       var conf;
       var email = window.location.search.substring(1);
       if (!email) {
-        document.querySelector('#main').textContent = 'Pass email of peer user as URL parameter. \nE.g. ' + location.href + '?bob.smith@unify.com';
+        document.querySelector('#main').innerText = 'Pass email of peer user as URL parameter. \nE.g. ' + location.href + '?bob.smith@unify.com';
       } else {
         // Wait for 'polymer-ready'. Ensures the element is upgraded.
         window.addEventListener('polymer-ready', function(e) {

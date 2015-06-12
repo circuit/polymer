@@ -30,7 +30,7 @@
       var conf;
       var convId = window.location.search.substring(1);
       if (!convId) {
-        document.querySelector('#main').textContent = 'Pass conversation ID as URL parameter. \nE.g. ' + location.href + '?3154f545-1a6a-493a-8448-3c5cfa5a6b11';
+        document.querySelector('#main').innerText = 'Pass conversation ID as URL parameter. \nE.g. ' + location.href + '?3154f545-1a6a-493a-8448-3c5cfa5a6b11';
       } else {
         // Wait for 'polymer-ready'. Ensures the element is upgraded.
         window.addEventListener('polymer-ready', function(e) {
