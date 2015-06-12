@@ -17,3 +17,7 @@ polyfill-next-selector { content: ':host > h2'; }
 .action-button {
   font-family: 'Open Sans', 'sans-serif';
 }
+
+.feed-header {
+  background-image: none;
+}

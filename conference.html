@@ -16,25 +16,33 @@
   </head>
   <body unresolved>
     <h1>Circuit Polymer test page: circuit-conf-button</h1>
-    <p>Component: <code>circuit-conf-button</code></p>
-    <p>Logged On User: <i id="localUser"></i></p>
+    <div id="main">
+        <p>Component: <code>circuit-conf-button</code></p>
+        <p>Logged On User: <i id="localUser"></i></p>
+        <p>Conversation ID: <i id="conversationId"></i></p>
 
-    <div id="container" layout horizontal center style="display:none">
-      <!-- <circuit-conf-button domain="localhost:8094" convId="3154f545-1a6a-493a-8448-3c5cfa5a6b11"/> -->
-      <circuit-conf-button domain="circuitsandbox.net" convId="3154f545-1a6a-493a-8448-3c5cfa5a6b11"/>
+        <div id="container" layout horizontal center style="display:none">
+          <circuit-conf-button domain="circuitsandbox.net" convId="3154f545-1a6a-493a-8448-3c5cfa5a6b11" width="100px"/>
+        </div>
     </div>
 
     <script>
       var conf;
-      // Wait for 'polymer-ready'. Ensures the element is upgraded.
-      window.addEventListener('polymer-ready', function(e) {
-        conf = document.querySelector('circuit-conf-button');
-
-        conf.addEventListener('on-circuit-user-logged-on', function () {
-           document.querySelector('#localUser').textContent = conf.localUser.displayName;
-           document.querySelector('#container').style.display = '';
-        });
-      });
+      var convId = window.location.search.substring(1);
+      if (!convId) {
+        document.querySelector('#main').textContent = 'Pass conversation ID as URL parameter. \nE.g. ' + location.href + '?3154f545-1a6a-493a-8448-3c5cfa5a6b11';
+      } else {
+        // Wait for 'polymer-ready'. Ensures the element is upgraded.
+        window.addEventListener('polymer-ready', function(e) {
+          conf = document.querySelector('circuit-conf-button');
+          conf.convId = convId;
+          document.querySelector('#conversationId').textContent = conf.convId;
+          conf.addEventListener('on-circuit-user-logged-on', function () {
+            document.querySelector('#localUser').textContent = conf.localUser.displayName;
+            document.querySelector('#container').style.display = '';
+          });
+        });        
+      }
     </script>
   </body>
 </html>

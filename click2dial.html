@@ -16,24 +16,34 @@
   </head>
   <body unresolved>
     <h1>Circuit Polymer test page: circuit-call-button</h1>
-    <p>Component: <code>circuit-call-button</code></p>
-    <p>Logged On User: <i id="localUser"></i></p>
+    <div id="main">
+      <p>Component: <code>circuit-call-button</code></p>
+      <p>Logged On User: <i id="localUser"></i></p>
+      <p>User being called: <i id="peer"></i></p>
 
-    <div id="container" layout horizontal center style="display:none">
-      <circuit-call-button domain="circuitsandbox.net" peer="peer.user@unify.com" width="75px">Contact Us</circuit-call-button>
+      <div id="container" layout horizontal center style="display:none">
+        <circuit-call-button domain="circuitsandbox.net" peer="peer.user@unify.com" width="75px">Contact Us</circuit-call-button>
+      </div>
     </div>
 
     <script>
       var conf;
-      // Wait for 'polymer-ready'. Ensures the element is upgraded.
-      window.addEventListener('polymer-ready', function(e) {
-        conf = document.querySelector('circuit-call-button');
+      var email = window.location.search.substring(1);
+      if (!email) {
+        document.querySelector('#main').textContent = 'Pass email of peer user as URL parameter. \nE.g. ' + location.href + '?bob.smith@unify.com';
+      } else {
+        // Wait for 'polymer-ready'. Ensures the element is upgraded.
+        window.addEventListener('polymer-ready', function(e) {
+          conf = document.querySelector('circuit-call-button');
+          conf.peer = email;
+          document.querySelector('#peer').textContent = conf.peer;
 
-        conf.addEventListener('on-circuit-user-logged-on', function () {
-           document.querySelector('#localUser').textContent = conf.localUser.displayName;
-           document.querySelector('#container').style.display = '';
+          conf.addEventListener('on-circuit-user-logged-on', function () {
+            document.querySelector('#localUser').textContent = conf.localUser.displayName;
+            document.querySelector('#container').style.display = '';
+          });
         });
-      });
+      }
     </script>
   </body>
 </html>
