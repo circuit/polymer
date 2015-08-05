@@ -1,6 +1,6 @@
 # Circuit Polymer Components
 
-> Example polymer components for the Circuit Collaboration Software by Unify.
+Example polymer components for the Circuit Collaboration Software by Unify.
 
 > Components are still based on Polymer 0.5. We are working hard to upgrade them to 1.0.
 
