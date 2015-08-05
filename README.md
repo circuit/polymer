@@ -2,77 +2,45 @@
 
 Example polymer components for the Circuit Collaboration Software by Unify.
 
-> Components are still based on Polymer 0.5. We are working hard to upgrade them to 1.0.
+> The master branch is compatible with Polymer 1.0. For Polymer 0.5 compatible components switch to tag 0.0.1-alpha.
 
 ## Prerequisites
 To use the SDK you need to get free developer account. Get your developer account today at https://www.yourcircuit.com/web/developers/home.
 
 ## Compatibility
-Polymer components are supported on any modern browser. Some functionality with as WebRTC is currently limited to Chrome, but IE and FF as on the way. See [Polymer Compatibility](https://www.polymer-project.org/0.5/resources/compatibility.html) for more info.
+Polymer components are supported on any modern browser. Some functionality such as WebRTC is currently limited to Chrome, but IE and FF as on the way.
 
 ## List of example components
 
-**circuit-conf-button**
+**circuit-api**
 
-[API Documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-conf-button/index.html) | [Source code](https://github.com/yourcircuit/polymer/tree/master/components/circuit-conf-button) 
+[API Documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-api/index.html) | [Source code](https://github.com/yourcircuit/polymer/tree/master/components/circuit-api) 
 
-Shows a button to start/join a Circuit voice/video/screenshare conference using WebRTC. Uses a polymer paper-dialog component to ask for credentials unless a session cookie is available.
+The circuit-api component is a non-UI component that acts as interface to the new leight weight [JS SDK] (JSDoc link to follow). We are trying our best to keep the circuit-api APIs up to date with the JS SDK, but if something is missing you can always add it.
 
-**circuit-call-button**
 
-[API Documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-call-button/index.html) | [Source code](https://github.com/yourcircuit/polymer/tree/master/components/circuit-call-button) 
+**circuit-chat**
 
-Shows a button to start Circuit voice call using WebRTC. Call can be upgraded to video and screenshare by either party.
+[API Documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-chat/index.html) | [Source code](https://github.com/yourcircuit/polymer/tree/master/components/circuit-chat) 
 
-**circuit-call-stage**
+Simple chat module wher you can post messages in a Circuit direct/group conversation and get notified on new messages arriving. Uses session cookie to login if available, otherwise asks for credentials.
 
-[API Documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-call-stage/index.html) | [Source code](https://github.com/yourcircuit/polymer/tree/master/components/circuit-call-stage) 
-
-UI Component representing the call stage. Shows participants video (or screenshare) as well as active speaker. Supports muting calls, toggle video, etc. Used by circuit-conf-button.
-
-**circuit-jsapi**
-
-[API Documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-jsapi/index.html) | [Source code](https://github.com/yourcircuit/polymer/tree/master/components/circuit-jsapi) 
-
-The circuit-jsapi component is a non-UI component that acts as interface to the regular [JS client API](https://circuitsandbox.net/sdk/). At this time the APIs and events are still very limited, but you are welcome to enhance with APIs exposed via the JS Client API.
-
-## Using circuit-conf-button
-The [circuit-conf-button](https://github.com/yourcircuit/polymer/tree/master/components/circuit-conf-button) example shows a button with which a user can start/join a WebRTC voice/video/screenshare conference. 
-
-[Try it out live](https://rawgit.com/yourcircuit/polymer/master/conference.html) if you have an account.
+[Try it out live](https://rawgit.com/yourcircuit/polymer/master/chat.html)
 
 All that's needed is to import the component and use it with a single line of HTML code.
 
 ```html
-<link rel="import" href="components/circuit-conf-button/circuit-conf-button.html">
-<circuit-conf-button convId="ca6c5dba-e905-4533-ba71-2c91392a9e47"></circuit-conf-button>
+<link rel="import" href="components/circuit-chat/circuit-chat.html">
+<circuit-chat
+  auto-logon 
+  conversation="ef675fc5-dcb1-4fe2-bcd1-83f32be5466f">
+</circuit-chat>
 ```
 
-As shown in the [API documentation](https://rawgit.com/yourcircuit/polymer/master/components/circuit-conf-button/index.html), the component exposes regular DOM methods and events that can be used.
-
-```html
-<link rel="import" href="components/circuit-conf-button/circuit-conf-button.html">
-<circuit-conf-button
-	convId="ca6c5dba-e905-4533-ba71-2c91392a9e47"
-	domain="circuitsandbox.net"
-	on-conference-started="{{onConfStarted}}"
-	on-user-joined="{{onUserJoined}}"
-	>
-</circuit-conf-button>
-```
-
-... or use them in JavaScript
+... you can also listen to the on-message event in JavaScript
 ```javascript
-conf = document.querySelector('circuit-conf-button');
-
-// Listen to user-logged-on event
-conf.addEventListener('on-circuit-user-logged-on', function () {
-	document.querySelector('#me').textContent = conf.localUser.displayName;
-});
-
-// Call startConference method on component
-conf.startConference({audio: true, video: false}, function () {
-	console.log('conference call started');
+document.getElementById('chat').addEventListener('message', function (m) {
+   console.log('Message from ' + m.detail.sender + ': ' + m.detail.text);
 });
 ```
 
@@ -80,12 +48,12 @@ conf.startConference({audio: true, video: false}, function () {
 
  1. Clone this repo
  2. Install node-static via `npm install node-static`
- 3. Run the example by navigating to `http://localhost:8080/conference.html`
+ 3. Run the example by navigating to `http://localhost:8080/chat-example.html`
 
 ## Develop your own component
 
  1. Fork this repo
- 2. Enhance the circuit-jsapi component with APIs you need from the [JS Client API](https://circuitsandbox.net/sdk/)
- 4. Create your own amazing components
- 5. Share them with the rest of us :)
+ 2. Create your own amazing components 
+ 3. Include circuit-api to take advantage of the Circuit API
+ 4. Share them with the rest of us :)
 
