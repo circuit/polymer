@@ -1,14 +1,17 @@
-# Circuit Polymer Components
+# Circuit Polymer Components compatible with Polymer 0.5
 
 Example polymer components for the Circuit Collaboration Software by Unify.
 
-> The master branch is compatible with Polymer 1.0. For Polymer 0.5 compatible components switch to tag 0.0.1-alpha.
+> For Polymer 1.0 compatible components view the individual repos. 
+> E.g. https://github.com/yourcircuit/circuit-api
+> To see a list of all Circuit Polymer 1.0 components filter by 'circuit-' 
+> Here is the link with the filter: https://github.com/yourcircuit/?utf8=%E2%9C%93&query=circuit-
 
 ## Prerequisites
-To use the SDK you need to get free developer account. Get your developer account today at https://www.yourcircuit.com/web/developers/home.
+To use the SDK you need to get free developer account. Get your developer account today at [https://developers.circuit.com](https://developers.circuit.com).
 
 ## Compatibility
-Polymer components are supported on any modern browser. Some functionality such as WebRTC is currently limited to Chrome, but IE and FF as on the way.
+Polymer components are supported on any modern browser. Some functionality such as WebRTC is currently limited to Chrome, but IE and FF support is near.
 
 ## List of example components
 
