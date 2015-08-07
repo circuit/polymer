@@ -4,8 +4,9 @@ Example polymer components for the Circuit Collaboration Software by Unify.
 
 > For Polymer 1.0 compatible components view the individual repos. 
 > E.g. https://github.com/yourcircuit/circuit-api
+
 > To see a list of all Circuit Polymer 1.0 components filter by 'circuit-' 
-> Here is the link with the filter: https://github.com/yourcircuit/?utf8=%E2%9C%93&query=circuit-
+> https://github.com/yourcircuit/?utf8=%E2%9C%93&query=circuit-
 
 ## Prerequisites
 To use the SDK you need to get free developer account. Get your developer account today at [https://developers.circuit.com](https://developers.circuit.com).
