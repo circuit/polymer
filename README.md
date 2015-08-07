@@ -6,6 +6,7 @@ Example polymer components for the Circuit Collaboration Software by Unify.
 > E.g. https://github.com/yourcircuit/circuit-api
 
 > To see a list of all Circuit Polymer 1.0 components filter by 'circuit-' 
+
 > https://github.com/yourcircuit/?utf8=%E2%9C%93&query=circuit-
 
 ## Prerequisites
