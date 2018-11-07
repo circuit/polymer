@@ -102,7 +102,7 @@ Fired when the dialog's `opened` property changes.
       <div id="divider"></div>
 
       <!-- Stage -->
-      <audio autoplay id="remoteAudio" src="{{call.remoteAudioUrl}}"></audio>
+      <audio autoplay id="remoteAudio" srcObject="{{call.remoteAudioStream}}"></audio>
       <div id="stage" class="{{callTypeCss}}">
         <span class="waiting-msg">Waiting for participants to join...</span>
         <div id="primarystage">
@@ -110,8 +110,8 @@ Fired when the dialog's `opened` property changes.
             <template repeat="{{participant in primaryParticipants}}">
               <li on-click="{{muteParticipant}}">
                 <div class="avatar">
-                  <img src="https://{{domain}}/{{participant.avatarLarge}}" style="display: {{!!participant.videoUrl ? 'none' : 'flex'}}">
-                  <video src="{{participant.videoUrl}}" autoplay="true" style="display: {{!!participant.videoUrl ? 'flex' : 'none'}}"></video>
+                  <img src="https://{{domain}}/{{participant.avatarLarge}}" style="display: {{!!participant.videoStream ? 'none' : 'flex'}}">
+                  <video srcObject="{{participant.videoStream}}" autoplay="true" style="display: {{!!participant.videoStream ? 'flex' : 'none'}}"></video>
                   <div class="name">
                     <span class="firstName">{{participant.firstName}}</span>
                     <span class="firstName">{{participant.lastName}}</span>
@@ -128,8 +128,8 @@ Fired when the dialog's `opened` property changes.
             <template repeat="{{participant in secondaryParticipants}}">
               <li on-click="{{muteParticipant}}">
                 <div class="avatar">
-                  <img src="https://{{domain}}/{{participant.avatarLarge}}" style="display: {{!!participant.videoUrl ? 'none' : 'flex'}}">
-                  <video src="{{participant.videoUrl}}" autoplay="true" style="display: {{!!participant.videoUrl ? 'flex' : 'none'}}"></video>
+                  <img src="https://{{domain}}/{{participant.avatarLarge}}" style="display: {{!!participant.videoStream ? 'none' : 'flex'}}">
+                  <video srcObject="{{participant.videoStream}}" autoplay="true" style="display: {{!!participant.videoStream ? 'flex' : 'none'}}"></video>
                   <div class="name">
                     <span class="firstName">{{participant.firstName}}</span>
                     <span class="firstName">{{participant.lastName}}</span>
@@ -151,7 +151,7 @@ Fired when the dialog's `opened` property changes.
         <div class="local-user">
           <div class="crop" style="display:{{localVideoShown||localScreenShareShown?'block':'none'}}">
             <div class="overlays"></div>
-            <video class="video-preview" autoplay="true" src="{{call.localVideoUrl}}"></video>
+            <video class="video-preview" autoplay="true" srcObject="{{call.localVideoStream}}"></video>
           </div>
         </div>
       </div>
@@ -244,8 +244,8 @@ Fired when the dialog's `opened` property changes.
 
 
         computed: {
-          localVideoShown: 'call.localVideoUrl && call.localMediaType.video',
-          localScreenShareShown: 'call.localVideoUrl && call.localMediaType.desktop'
+          localVideoShown: 'call.localVideoStream && call.localMediaType.video',
+          localScreenShareShown: 'call.localVideoStream && call.localMediaType.desktop'
         },
 
         /**
