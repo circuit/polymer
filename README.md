@@ -1,3 +1,5 @@
+# Obsolete. Use https://github.com/circuit/circuit-web-components instead
+
 # Circuit Polymer Components compatible with Polymer 0.5
 
 Example polymer components for the Circuit Collaboration Software by Unify.
